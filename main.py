@@ -67,8 +67,8 @@ def sendMessage():
         send_size = link.tx_obj(int(second), start_pos=send_size)
         link.send(send_size)
 
-    except Exception as e:
-        print(f"Error in sending message: {e}")
+    except:
+        print(f"Error in sending message")
 
 
 
@@ -85,8 +85,8 @@ def get_service_status():
         elif status == 'failed':
             rtlStatus = RtlState.RTL_FAIL
         return rtlStatus
-    except Exception as e:
-        return str(e)
+    except:
+        print(f"Error in getting service status")
     
 
 
