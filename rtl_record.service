@@ -3,7 +3,7 @@ Description=RTL-SDR IQ Record Service
 After=network.target
 
 [Service]
-ExecStart=/home/eclipse/vlf/ASCEND_Eclipse_PI/
+ExecStart=bash /home/eclipse/vlf/ASCEND_Eclipse_PI/iq_record.sh
 Type=simple
 Restart=on-failure
 RestartSec=2s
