@@ -33,7 +33,7 @@ class RtlState(IntEnum):
 
 # Objects
 link = txfer.SerialTransfer('/dev/serial0')
-picam2 = Picamera2()
+
 
 # Globals
 rate_between_pictures = 0.05  # Seconds
