@@ -22,8 +22,8 @@ class CameraState(IntEnum):
     PHOTO_ERROR = 2  # The system has failed to take a photo
 
 class RtlState(IntEnum):
-    RTL_ACTIVE = 0  # The rtl_record service is active
-    RTL_INACTIVE = 1  # The rtl_record service is inactive
+    RTL_INACTIVE = 0  # The rtl_record service is inactive
+    RTL_ACTIVE = 1  # The rtl_record service is active
     RTL_FAIL = 2  # The rtl_record service has failed
     
     
