@@ -14,4 +14,4 @@ log_file="${log_path}log_${timestamp}.txt"
 source /home/eclipse/vlf/ASCEND_Eclipse_PI/.venv/bin/activate
 
 # Run Python script
-python /home/eclipse/vlf/ASCEND_Eclipse_PI/main.py >> $log_file
+nohup python /home/eclipse/vlf/ASCEND_Eclipse_PI/main.py > $log_file &
