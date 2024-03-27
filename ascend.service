@@ -1,6 +1,8 @@
 [Unit]
 Description=ASCEND_Eclipse_PI
-After=network.target
+After=dev-serial0.device
+Requries=dev-serial0.device
+User=eclipse
 
 [Service]
 ExecStart=bash /home/eclipse/vlf/ASCEND_Eclipse_PI/start_main.sh
