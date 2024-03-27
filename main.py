@@ -7,6 +7,7 @@ import struct
 from enum import IntEnum
 import subprocess
 from picamera2 import Picamera2
+import sys
 
 
 # Define the system state as per your existing code
@@ -120,3 +121,9 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Stopping")
         link.close()
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}")
+        link.close()
+        sys.exit(1)
+
