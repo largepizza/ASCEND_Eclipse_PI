@@ -59,7 +59,7 @@ def send_heartbeat():
     try:
         while True:
             if state != SystemState.IDLE:
-                sendMessage(state, 'heartbeat')
+                sendMessage(state, check_service_status())
                 #print("Heartbeat sent")
             sleep(0.5)  # Delay between heartbeats
     except Exception as e:
