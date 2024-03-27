@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Activate the virtual environment
-source .venv/bin/activate
+source /home/eclipse/vlf/ASCEND_Eclipse_PI/.venv/bin/activate
 
 # Run your Python script
-python main.py
+python /home/eclipse/vlf/ASCEND_Eclipse_PI/main.py
