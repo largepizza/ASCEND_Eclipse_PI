@@ -116,12 +116,6 @@ if __name__ == "__main__":
 
             # Wait for a while before checking again
             time.sleep(1)
-        
-
-    except KeyboardInterrupt:
-        print("Stopping")
-        link.close()
-        sys.exit(1)
     except Exception as e:
         print(f"Error: {e}")
         link.close()
