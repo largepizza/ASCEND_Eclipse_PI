@@ -28,11 +28,14 @@ def sendMessage(status, message = ' '):
     try:
         # get the current time
         now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
-        # Send the status and message over UART
-        send_size = link.tx_obj(current_time)
-        send_size += link.tx_obj(status)
-        send_size += link.tx_obj(message)
+        current_time = now.strftime("%H,%M,%S,")
+
+        #combine the timestamp and message
+        buffer = current_time + message
+        # Send the status and message over 
+        send_size = 0
+        send_size = link.tx_obj(int(status), start_pos=send_size)
+        send_size = link.tx_obj(buffer, start_pos=send_size)
         link.send(send_size)
         print("Message sent")
     except Exception as e:
@@ -57,7 +60,7 @@ def send_heartbeat():
         while True:
             if state != SystemState.IDLE:
                 sendMessage(state, 'heartbeat')
-                print("Heartbeat sent")
+                #print("Heartbeat sent")
             sleep(0.5)  # Delay between heartbeats
     except Exception as e:
         print(f"Error in heartbeat thread: {e}")
