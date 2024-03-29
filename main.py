@@ -4,6 +4,7 @@ from datetime import datetime
 from time import sleep
 from pySerialTransfer import pySerialTransfer as txfer
 import struct
+import threading
 from enum import IntEnum
 import subprocess
 from picamera2 import Picamera2
@@ -89,24 +90,16 @@ def get_service_status():
         print(f"Error in getting service status")
     
 
-
-
-
-# Main function
-if __name__ == "__main__":
-
-    # Initialize UART link
-    link.open()
-    print("Serial port opened")
-
-    #Initialize the camera
-
-
-
-    # All good, start the main loop
-    systemStatus = SystemState.SYS_OK
-
+def UARTLinkThread():
     try:
+        # Initialize UART link
+        link.open()
+        print("Serial port opened")
+
+
+        # All good, start the main loop
+        systemStatus = SystemState.SYS_OK
+
         while True:
             # Get the status of the rtl_record service
             rtlStatus = get_service_status()
@@ -117,7 +110,81 @@ if __name__ == "__main__":
             # Wait for a while before checking again
             time.sleep(1)
     except Exception as e:
-        print(f"Error: {e}")
+        #Close the serial port and start again
         link.close()
+        print(f"Error: {e}")
+        print("Restarting the UART link thread in 2 seconds")
+        time.sleep(2)
+        UARTLinkThread()
+        
+#Camera thread
+def CameraThread():
+    try:
+        # Initialize the camera
+        picam2 = Picamera2()
+
+        # Configure the camera
+        config = picam2.create_still_configuration()
+        config["main"]["size"] = (2592, 1944)
+        picam2.configure(config)
+        picam2.start()
+
+        parentDirectory = "/home/eclipse/Pictures/"
+        #Create unique directory for the current date and time
+        currentDateTime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        directory = parentDirectory + currentDateTime
+        
+
+
+        count = 0
+        while True:
+            # Generate the filename based on the count
+            filename = f"{directory}/image_{count:06d}.jpg"
+
+            # Capture the image
+            try:
+                picam2.capture_file(filename)
+                cameraStatus = CameraState.PHOTO_SUCCESS
+            except:
+                cameraStatus = CameraState.PHOTO_ERROR
+
+
+            # Wait for the specified interval before taking the next picture
+            time.sleep(rate_between_pictures)
+
+            # Increment the count
+    except Exception as e:
+        #Start the camera thread again in two seconds
+        print(f"Error: {e}")
+        print("Restarting the camera thread in 2 seconds")
+        time.sleep(2)
+        CameraThread()
+
+
+
+
+
+
+
+# Main function
+if __name__ == "__main__":
+
+    print("Starting the system")
+    # Start the UART link thread
+    uart_thread = threading.Thread(target=UARTLinkThread)
+    uart_thread.start()
+    print("UART link thread started")
+
+    # Start the camera thread
+    camera_thread = threading.Thread(target=CameraThread)
+    camera_thread.start()
+    print("Camera thread started")
+
+    try:
+        uart_thread.join()
+        camera_thread.join()
+        
+    except Exception as e:
+        print(f"Error: {e}")
         sys.exit(1)
 
