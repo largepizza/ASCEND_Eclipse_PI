@@ -47,11 +47,14 @@ rtlStatus = RtlState.RTL_INACTIVE
 
 
 def sendMessage():
+    global systemStatus
+    global cameraStatus
+    global rtlStatus
+
     try:
         # get the current time
         now = datetime.now()
 
-        
 
         # Get time as integers
         hour = now.hour
@@ -75,6 +78,9 @@ def sendMessage():
 
 
 def get_service_status():
+    global systemStatus
+    global cameraStatus
+    global rtlStatus
     try:
         # Check the status of the rtl_record service
         result = subprocess.run(['systemctl', 'is-active', 'rtl_record.service'], capture_output=True, text=True)
@@ -91,6 +97,9 @@ def get_service_status():
     
 
 def UARTLinkThread():
+    global systemStatus
+    global cameraStatus
+    global rtlStatus
     try:
         # Initialize UART link
         link.open()
@@ -119,6 +128,9 @@ def UARTLinkThread():
         
 #Camera thread
 def CameraThread():
+    global systemStatus
+    global cameraStatus
+    global rtlStatus
     try:
         # Initialize the camera
         picam2 = Picamera2()
@@ -133,6 +145,9 @@ def CameraThread():
         #Create unique directory for the current date and time
         currentDateTime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         directory = parentDirectory + currentDateTime
+
+        #Create the directory
+        subprocess.run(["mkdir", directory])
         
 
 
@@ -145,6 +160,7 @@ def CameraThread():
             try:
                 picam2.capture_file(filename)
                 cameraStatus = CameraState.PHOTO_SUCCESS
+                count += 1
             except:
                 cameraStatus = CameraState.PHOTO_ERROR
 

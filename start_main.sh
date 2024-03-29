@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sleep 10
+sleep 1
 
 # Get the current date and time for the unique file name
 timestamp=$(date '+%Y-%m-%d_%H-%M-%S')
