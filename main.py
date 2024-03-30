@@ -122,8 +122,30 @@ def UARTLinkThread():
             # Get the status of the rtl_record service
             rtlStatus = get_service_status()
 
-            # Send the status message
-            sendMessage()
+            # Check for any incoming data
+            if link.available():
+                # Parse the incoming data
+                rec = link.rx_obj(obj_type='i')
+                print(f"Received command: {rec}")
+
+                # Check the command
+                if rec == 1:
+                    # Increment the shutdown count
+                    shutdownCount += 1
+                    print(f"Shutdown count: {shutdownCount}")
+
+                    # If the count is more than 3, then shutdown the system
+                    if shutdownCount >= 3:
+                        systemStatus = SystemState.SYS_REBOOT
+                        cameraStatus = CameraState.PHOTO_OFF
+                        print("Shutting down the system")
+                        break
+                else:
+                    # Reset the shutdown count
+                    shutdownCount = 0
+            else:
+                # Send the status message
+                sendMessage()
 
             # Wait for a while before checking again
             time.sleep(1)
@@ -191,51 +213,6 @@ def CameraThread():
         CameraThread()
 
 
-def UARTRXThread():
-    global systemStatus
-    global cameraStatus
-    global link
-    global shutdownCount
-    try:
-        while True:
-            # Check if there is any data available
-             # Check for commands
-            if link.available():
-                # Parse the command
-                print("Command received")
-
-                recsize = 0
-                rec = link.rx_obj(obj_type='i', start_pos=recsize)
-
-                #typecast the command to Command enum
-                command = int(rec)
-                
-                if command == 1:
-                    shutdownCount += 1
-
-            # If the shutdown command is received 3 times, shutdown the system
-            if shutdownCount >= 3:
-                print("Shutting down the system")
-                systemStatus = SystemState.SYS_REBOOT
-                sendMessage()
-
-                # Run stop_service.sh with sudo privileges
-                subprocess.run(['sudo', 'bash', '/home/eclipse/stop_rtl.sh'])
-
-                while rtlStatus == RtlState.RTL_ACTIVE:
-                    rtlStatus = get_service_status()
-                    sendMessage()
-                    time.sleep(1)
-
-                
-
-                # Shutdown the system
-                subprocess.run(['sudo', 'shutdown', 'now'])
-    except Exception as e:
-        print(f"Error: {e}")
-        print("Restarting the UART RX thread in 2 seconds")
-        time.sleep(2)
-        UARTRXThread()
 
 
 
@@ -254,15 +231,12 @@ if __name__ == "__main__":
     camera_thread.start()
     print("Camera thread started")
 
-    # Start the UART RX thread
-    uart_rx_thread = threading.Thread(target=UARTRXThread)
-    uart_rx_thread.start()
-    print("UART RX thread started")
+
 
     try:
         uart_thread.join()
         camera_thread.join()
-        uart_rx_thread.join()
+
         
     except Exception as e:
         print(f"Error: {e}")
