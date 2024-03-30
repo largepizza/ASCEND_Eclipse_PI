@@ -172,7 +172,7 @@ def CameraThread():
         picam2.configure(config)
         picam2.start()
 
-        parentDirectory = "/home/eclipse/Pictures/"
+        parentDirectory = "/media/eclipse/eclipse_data/PHOTO/"
         #Create unique directory for the current date and time
         currentDateTime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         directory = parentDirectory + currentDateTime
