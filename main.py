@@ -32,8 +32,8 @@ class Command(IntEnum):
     CMD_ACK = 0  # Acknowledge
     CMD_SHUTDOWN = 1  # Shutdown the system
 
-    
-    
+class rxStuctClass(object):
+    command = Command.CMD_ACK
 
 
 
@@ -49,7 +49,7 @@ systemStatus = SystemState.SYS_IDLE
 cameraStatus = CameraState.PHOTO_OFF
 rtlStatus = RtlState.RTL_INACTIVE
 
-shutdownCount = 0
+
 
 def sendMessage():
     global systemStatus
@@ -105,6 +105,10 @@ def UARTLinkThread():
     global systemStatus
     global cameraStatus
     global rtlStatus
+    shutdownCount = 0
+
+    rxStruct = rxStuctClass
+
     try:
         # Initialize UART link
         link.open()
@@ -121,7 +125,13 @@ def UARTLinkThread():
             # Check for commands
             if link.available():
                 # Parse the command
-                command = link.rx_obj(obj_type=IntEnum, obj_enum=Command)
+
+                recsize = 0
+                rxStruct.command = link.rx_obj(obj_type='i', start_pos=recsize)
+
+                #typecast the command to Command enum
+                command = Command(rxStruct.command)
+                
                 if command == Command.CMD_SHUTDOWN:
                     shutdownCount += 1
 
