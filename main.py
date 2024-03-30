@@ -27,6 +27,11 @@ class RtlState(IntEnum):
     RTL_INACTIVE = 0  # The rtl_record service is inactive
     RTL_ACTIVE = 1  # The rtl_record service is active
     RTL_FAIL = 2  # The rtl_record service has failed
+
+class Command(IntEnum):
+    CMD_ACK = 0  # Acknowledge
+    CMD_SHUTDOWN = 1  # Shutdown the system
+
     
     
 
@@ -44,7 +49,7 @@ systemStatus = SystemState.SYS_IDLE
 cameraStatus = CameraState.PHOTO_OFF
 rtlStatus = RtlState.RTL_INACTIVE
 
-
+shutdownCount = 0
 
 def sendMessage():
     global systemStatus
@@ -113,6 +118,34 @@ def UARTLinkThread():
             # Get the status of the rtl_record service
             rtlStatus = get_service_status()
 
+            # Check for commands
+            if link.available():
+                # Parse the command
+                command = link.rx_obj(obj_type=IntEnum, obj_enum=Command)
+                if command == Command.CMD_SHUTDOWN:
+                    shutdownCount += 1
+
+            # If the shutdown command is received 3 times, shutdown the system
+            if shutdownCount >= 3:
+                print("Shutting down the system")
+                systemStatus = SystemState.SYS_REBOOT
+                sendMessage()
+
+                # Run stop_service.sh with sudo privileges
+                subprocess.run(['sudo', 'bash', '/home/eclipse/stop_rtl.sh'])
+
+                while rtlStatus == RtlState.RTL_ACTIVE:
+                    rtlStatus = get_service_status()
+                    sendMessage()
+                    time.sleep(1)
+
+                
+
+                # Shutdown the system
+                subprocess.run(['sudo', 'shutdown', 'now'])
+
+
+
             # Send the status message
             sendMessage()
 
@@ -167,6 +200,11 @@ def CameraThread():
 
             # Wait for the specified interval before taking the next picture
             time.sleep(rate_between_pictures)
+
+            # Stop pictures on receiving the shutdown command
+            while systemStatus == SystemState.SYS_REBOOT:
+                cameraStatus = CameraState.PHOTO_OFF
+                time.sleep(1)
 
             # Increment the count
     except Exception as e:
