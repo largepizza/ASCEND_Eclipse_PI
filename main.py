@@ -122,30 +122,8 @@ def UARTLinkThread():
             # Get the status of the rtl_record service
             rtlStatus = get_service_status()
 
-            # Check for any incoming data
-            if link.available():
-                # Parse the incoming data
-                rec = link.rx_obj(obj_type='i')
-                print(f"Received command: {rec}")
-
-                # Check the command
-                if rec == 1:
-                    # Increment the shutdown count
-                    shutdownCount += 1
-                    print(f"Shutdown count: {shutdownCount}")
-
-                    # If the count is more than 3, then shutdown the system
-                    if shutdownCount >= 3:
-                        systemStatus = SystemState.SYS_REBOOT
-                        cameraStatus = CameraState.PHOTO_OFF
-                        print("Shutting down the system")
-                        break
-                else:
-                    # Reset the shutdown count
-                    shutdownCount = 0
-            else:
-                # Send the status message
-                sendMessage()
+            # Send the status message
+            sendMessage()
 
             # Wait for a while before checking again
             time.sleep(1)
